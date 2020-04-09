@@ -1,2 +1,2 @@
-# webusb_eps32
+# webusb_ESP32
 A sample code using WebBluetooth communicate with ESP32
