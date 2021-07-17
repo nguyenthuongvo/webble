@@ -1,113 +1,195 @@
-<button id="read">Connect with BLE device</button>
-<button id="start" disabled>Start</button>
-<button id="stop" disabled>Stop</button>
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <title>WEBBLE - Vo Nguyen</title>
 
-<script>
-  var deviceName = 'BLE Battery'
-  var bleService = 'battery_service'
-  var bleCharacteristic = 'battery_level'
-  var bluetoothDeviceDetected
-  var gattCharacteristic
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">WebBLE</a>
+          <div class="d-flex">
+            <button class="btn btn-outline-warning" id="read">Scan</button>
+          </div>
+        </div>
+      </nav>
 
-  document.querySelector('#read').addEventListener('click', function() {
-    if (isWebBluetoothEnabled()) { read() }
-  })
+  </head>
+  <body>
+    
+    <div class="container pt-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-floating">
+                            <textarea class="form-control text-log" placeholder="Leave a comment here" id="textareaNotification" style="height: 200px"></textarea>
+                            <label for="textareaNotification">Notifications</label>
+                        </div>
+                    </div>
+                </div>
+            </div>   
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                      <button type="button" class="btn btn-dark btn-outline-warning" id="start">Start</button>
+                      <button type="button" class="btn btn-dark btn-outline-warning" id="stop">Stop</button>
+                    </div>
+                    <div class="col-sm-6">
+                        <h4 id="battery_level">Batter Level</h4>
+                    </div>
+                </div>
+            </div>   
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 
-  document.querySelector('#start').addEventListener('click', function(event) {
-    if (isWebBluetoothEnabled()) { start() }
-  })
+    <script>
+        var deviceName = 'BLE Battery';
+        var bleService = 'battery_service';
+        var bleCharacteristic = 'battery_level';
+        var bluetoothDeviceDetected;
+        var gattCharacteristic;
 
-  document.querySelector('#stop').addEventListener('click', function(event) {
-    if (isWebBluetoothEnabled()) { stop() }
-  })
+        $(document).ready(function() {
 
-  function isWebBluetoothEnabled() {
-    if (!navigator.bluetooth) {
-      console.log('Web Bluetooth API is not available in this browser!')
-      return false
-    }
+            $('#read').click(function() {
+                if (isWebBluetoothEnabled()) { 
+                    read(); 
+                }
+            })
 
-    return true
-  }
+            $('#start').click(function() {
+                if (isWebBluetoothEnabled()) { 
+                    if (isWebBluetoothEnabled()) { start() }
+                }
+            })
 
-  function getDeviceInfo() {
-    let options = {
-      optionalServices: [bleService],
-      filters: [
-        { "name": deviceName }
-      ]
-    }
 
-    console.log('Requesting any Bluetooth Device...')
-    return navigator.bluetooth.requestDevice(options).then(device => {
-      bluetoothDeviceDetected = device
-    }).catch(error => {
-      console.log('Argh! ' + error)
-    })
-  }
+            $('#stop').click(function() {
+                if (isWebBluetoothEnabled()) { 
+                    stop(); 
+                }
+            })
 
-  function read() {
-    return (bluetoothDeviceDetected ? Promise.resolve() : getDeviceInfo())
-    .then(connectGATT)
-    .then(_ => {
-      console.log('Reading UV Index...')
-      return gattCharacteristic.readValue()
-    })
-    .catch(error => {
-      console.log('Waiting to start reading: ' + error)
-    })
-  }
+        });
 
-  function connectGATT() {
-    if (bluetoothDeviceDetected.gatt.connected && gattCharacteristic) {
-      return Promise.resolve()
-    }
 
-    return bluetoothDeviceDetected.gatt.connect()
-    .then(server => {
-      console.log('Getting GATT Service...')
-      return server.getPrimaryService(bleService)
-    })
-    .then(service => {
-      console.log('Getting GATT Characteristic...')
-      return service.getCharacteristic(bleCharacteristic)
-    })
-    .then(characteristic => {
-      gattCharacteristic = characteristic
-      gattCharacteristic.addEventListener('characteristicvaluechanged',
-          handleChangedValue)
-      document.querySelector('#start').disabled = false
-      document.querySelector('#stop').disabled = true
-    })
-  }
+        function isWebBluetoothEnabled() {
+            if (!navigator.bluetooth) {
+            console.log('Web Bluetooth API is not available in this browser!');
+            log('Web Bluetooth API is not available in this browser!');
+            return false
+            }
 
-  function handleChangedValue(event) {
-    let value = event.target.value.getUint8(0)
-    var now = new Date()
-    console.log('> ' + now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds() + ' UV Index is ' + value)
-  }
+            return true
+        }
 
-  function start() {
-    gattCharacteristic.startNotifications()
-    .then(_ => {
-      console.log('Start reading...')
-      document.querySelector('#start').disabled = true
-      document.querySelector('#stop').disabled = false
-    })
-    .catch(error => {
-      console.log('[ERROR] Start: ' + error)
-    })
-  }
+        function getDeviceInfo() {
+            let options = {
+            optionalServices: [bleService],
+            filters: [
+                { "name": deviceName }
+            ]
+            }
 
-  function stop() {
-    gattCharacteristic.stopNotifications()
-    .then(_ => {
-      console.log('Stop reading...')
-      document.querySelector('#start').disabled = false
-      document.querySelector('#stop').disabled = true
-    })
-    .catch(error => {
-      console.log('[ERROR] Stop: ' + error)
-    })
-  }
-</script>
+            console.log('Requesting any Bluetooth Device...');
+            log('Requesting any Bluetooth Device...');
+            return navigator.bluetooth.requestDevice(options).then(device => {
+                bluetoothDeviceDetected = device;
+                $('#read').text('Disconnect');
+            }).catch(error => {
+                console.log('Argh! ' + error);
+                log('Argh! ' + error);
+            })
+        }
+
+        function read() {
+            return (bluetoothDeviceDetected ? Promise.resolve() : getDeviceInfo())
+            .then(connectGATT)
+            .then(_ => {
+                console.log('Reading UV Index...');
+                return gattCharacteristic.readValue();
+            })
+            .catch(error => {
+                console.log('Waiting to start reading: ' + error);
+                log('Waiting to start reading: ' + error);
+            })
+        }
+
+        function connectGATT() {
+            if (bluetoothDeviceDetected.gatt.connected && gattCharacteristic) {
+                return Promise.resolve()
+            }
+
+            return bluetoothDeviceDetected.gatt.connect()
+            .then(server => {
+                console.log('Getting GATT Service...');
+                log('Getting GATT Service...');
+                return server.getPrimaryService(bleService);
+            })
+            .then(service => {
+                console.log('Getting GATT Characteristic...');
+                log('Getting GATT Characteristic...');
+                return service.getCharacteristic(bleCharacteristic);
+            })
+            .then(characteristic => {
+                gattCharacteristic = characteristic
+                gattCharacteristic.addEventListener('characteristicvaluechanged', handleChangedValue)
+                document.querySelector('#start').disabled = false;
+                document.querySelector('#stop').disabled = true;
+            })
+        }
+
+        function handleChangedValue(event) {
+            let value = event.target.value.getUint8(0);
+            var now = new Date();
+            console.log('> ' + now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds() + ' UV Index is ' + value);
+            $('#battery_level').text(value);
+            log('Battery value ' + value);
+        }
+
+        function start() {
+            gattCharacteristic.startNotifications()
+            .then(_ => {
+                console.log('Start reading...');
+                log('Start reading...');
+                document.querySelector('#start').disabled = true;
+                document.querySelector('#stop').disabled = false;
+            })
+            .catch(error => {
+                console.log('[ERROR] Start: ' + error);
+                log('[ERROR] Start: ' + error);
+            })
+        }
+
+        function stop() {
+            gattCharacteristic.stopNotifications().then(_ => {
+                console.log('Stop reading...');
+                log('Stop reading...');
+                document.querySelector('#start').disabled = false;
+                document.querySelector('#stop').disabled = true;
+            })
+            .catch(error => {
+                console.log('[ERROR] Stop: ' + error);
+            })
+        }
+
+
+        function log(text) {
+            const now = new Date();
+            const prefixlog = now.getHours() + ':' + now.getMinutes() + ':'  + now.getSeconds() + '> ';
+
+            $('.text-log').val($('.text-log').val() + prefixlog + text + '\n');
+        }
+
+    </script>
+
+  </body>
+</html>
