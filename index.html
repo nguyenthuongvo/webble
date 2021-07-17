@@ -21,31 +21,73 @@
   <body>
     
     <div class="container pt-3">
-        <div class="card">
+        <div class="row">
+
+        </div>
+        <div class="card mb-3">
             <div class="card-body">
+                <h5>Logger</h5>
                 <div class="row">
-                    <div class="col-sm-12">
-                        <div class="form-floating">
-                            <textarea class="form-control text-log" placeholder="Leave a comment here" id="textareaNotification" style="height: 200px"></textarea>
-                            <label for="textareaNotification">Notifications</label>
-                        </div>
-                    </div>
+                  <div class="col-sm-12 mb-3">
+                      <textarea class="form-control text-log" id="textareaNotification" style="height: 200px"></textarea>
+                  </div>
+                  <div class="col">
+                    <button type="button" class="btn btn-dark btn-outline-warning" id="start">Start</button>
+                    <button type="button" class="btn btn-dark btn-outline-warning" id="stop">Stop</button>
+                  </div>
+                  <div class="col">
+                      <h4 id="battery_level">Batter Level</h4>
+                  </div>
+                  <div class="col-sm-12 mb-3">
+                    <button class="btn btn-dark btn-outline-warning" id="send">Send message</button>
+                </div>
                 </div>
             </div>   
         </div>
+
         <div class="card">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-sm-6">
-                      <button type="button" class="btn btn-dark btn-outline-warning" id="start">Start</button>
-                      <button type="button" class="btn btn-dark btn-outline-warning" id="stop">Stop</button>
-                    </div>
-                    <div class="col-sm-6">
                         <h4 id="battery_level">Batter Level</h4>
-                    </div>
+          <div class="card-body">
+            <div class="accordion" id="accordionExample">
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="headingOne">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                    Why ESP32 BLE Name does not show in browser ?
+                  </button>
+                </h2>
+                <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                  <div class="accordion-body">
+                    Double check GATT Services and Characteristic, ESP32 BLE will not appear if you are using incorrect GATT Services or UART Services.
+                  </div>
                 </div>
-            </div>   
-        </div>
+              </div>
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="headingTwo">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                    GATT Server is disconnected. Cannot perform GATT operations. (Re)connect first with `device.gatt.connect` error - Windows 10/11
+                  </button>
+                </h2>
+                <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
+                  <div class="accordion-body">
+                    The issues is not from Web Bluetooth API, it's related to WinOS. I have tested WEBBLE on  Windows 10 ( some version works well, some some version got issue). Now, I found issue on Windows 11. Let try it on Android Chrome or Buefly iOS, it will work smoothly.
+                  </div>
+                </div>
+              </div>
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="headingThree">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                    How to connect ESP32 BLE on iPhone, iPad?
+                  </button>
+                </h2>
+                <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
+                  <div class="accordion-body">
+                    The iOS does not support Web Bluetooth API, so you have to install Buefly App to run WebBLE on your iPhone or iPad.
+                  </div>
+                </div>
+              </div>
+            </div>  
+          </div>   
+      </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
@@ -78,8 +120,13 @@
                 }
             })
 
-        });
+            $('#send').click(function(){
+              if (isWebBluetoothEnabled()) { 
+                    send(); 
+                }
+            });
 
+        });
 
         function isWebBluetoothEnabled() {
             if (!navigator.bluetooth) {
@@ -114,7 +161,7 @@
             return (bluetoothDeviceDetected ? Promise.resolve() : getDeviceInfo())
             .then(connectGATT)
             .then(_ => {
-                console.log('Reading UV Index...');
+                console.log('Reading battery level...');
                 return gattCharacteristic.readValue();
             })
             .catch(error => {
@@ -150,7 +197,7 @@
         function handleChangedValue(event) {
             let value = event.target.value.getUint8(0);
             var now = new Date();
-            console.log('> ' + now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds() + ' UV Index is ' + value);
+            console.log('> ' + now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds() + ' battery level is ' + value);
             $('#battery_level').text(value);
             log('Battery value ' + value);
         }
